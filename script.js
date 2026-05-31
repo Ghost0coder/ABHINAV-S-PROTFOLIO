@@ -234,7 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (isValid) {
-            // Form is fully validated. Simulate submit feedback
+            // Form is fully validated. Submit to Google Form
             const submitBtn = contactForm.querySelector('.btn-submit');
             const submitText = submitBtn.querySelector('span');
             const submitIcon = submitBtn.querySelector('i');
@@ -244,7 +244,17 @@ document.addEventListener('DOMContentLoaded', () => {
             submitText.textContent = "Sending...";
             submitIcon.className = "fa-solid fa-circle-notch fa-spin";
             
-            setTimeout(() => {
+            const formData = new URLSearchParams(new FormData(contactForm));
+
+            fetch(contactForm.action || 'https://docs.google.com/forms/u/0/d/e/1FAIpQLSfGA0GG2YRLjJfxTEjkkfeeD8brxTT5-uJdrqq1_fO5YkCBog/formResponse', {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formData.toString()
+            })
+            .then(() => {
                 // Success UI State
                 submitText.textContent = "Sent!";
                 submitIcon.className = "fa-solid fa-check";
@@ -263,7 +273,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     toastMessage.classList.remove('show');
                 }, 5000);
-            }, 1800);
+            })
+            .catch(error => {
+                console.error('Submission error:', error);
+                
+                submitText.textContent = "Error";
+                submitIcon.className = "fa-solid fa-triangle-exclamation";
+                
+                setTimeout(() => {
+                    submitBtn.disabled = false;
+                    submitText.textContent = "Send Message";
+                    submitIcon.className = "fa-solid fa-paper-plane";
+                }, 3000);
+            });
         }
     });
 
