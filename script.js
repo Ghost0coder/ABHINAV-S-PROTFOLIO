@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
        DYNAMIC TYPING ANIMATION (HERO SUBTITLE)
        ========================================================================== */
     const typingElement = document.getElementById('typing-text');
-    const words = ["Self-Taught Web Developer", "Tech Enthusiast", "wibeCoder"];
+    const words = ["Self-Taught Web Developer", "Tech Enthusiast", "vibeCoder"];
     let wordIndex = 0;
     let charIndex = 0;
     let isDeleting = false;
