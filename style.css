@@ -1599,3 +1599,60 @@ body.light-theme .pillar-item {
         font-size: 2rem;
     }
 }
+
+/* ==========================================================================
+   3D SCROLL REVEAL ANIMATION SYSTEM
+   Elements fly in from 3D space (rotated + pushed back on the Z axis) the
+   moment they enter the viewport, then settle flat into place.
+   ========================================================================== */
+.reveal-3d,
+.reveal-3d-left,
+.reveal-3d-right {
+    opacity: 0;
+    transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform, opacity;
+}
+
+.reveal-3d {
+    transform: perspective(1400px) rotateX(24deg) translateY(70px) translateZ(-140px);
+}
+
+.reveal-3d-left {
+    transform: perspective(1400px) rotateY(-32deg) translateX(-80px) translateZ(-120px);
+}
+
+.reveal-3d-right {
+    transform: perspective(1400px) rotateY(32deg) translateX(80px) translateZ(-120px);
+}
+
+.reveal-3d.in-view,
+.reveal-3d-left.in-view,
+.reveal-3d-right.in-view {
+    opacity: 1;
+    transform: perspective(1400px) rotateX(0deg) rotateY(0deg) translateX(0) translateY(0) translateZ(0);
+}
+
+/* Hero portrait gets a continuous 3D tilt that's directly tied to scroll
+   position (updated every frame via JS) rather than a one-time reveal. */
+.hero-visual {
+    transform-style: preserve-3d;
+    will-change: transform, opacity;
+}
+
+/* Respect users who've asked for reduced motion: skip the 3D movement
+   entirely and just show everything in its final, settled state. */
+@media (prefers-reduced-motion: reduce) {
+    .reveal-3d,
+    .reveal-3d-left,
+    .reveal-3d-right {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+    }
+
+    .hero-visual {
+        transform: none !important;
+        opacity: 1 !important;
+    }
+}
