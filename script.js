@@ -298,4 +298,100 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    /* ==========================================================================
+       3D SCROLL REVEAL ANIMATION SYSTEM
+       Tags up sections and cards with 3D entrance classes, then uses an
+       IntersectionObserver to flip them into view (rotated-back-in-space ->
+       flat) the moment they scroll into the viewport. Also drives a
+       continuous, scroll-linked 3D tilt on the hero portrait.
+       ========================================================================== */
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (!prefersReducedMotion) {
+        // Section headers, the quote block, the startup card, and the contact
+        // form fly straight up out of 3D space.
+        const straightInSelectors = ['.section-header', '.about-quote', '.startup-grid'];
+        straightInSelectors.forEach((selector) => {
+            document.querySelectorAll(selector).forEach((el) => el.classList.add('reveal-3d'));
+        });
+
+        document.querySelectorAll('.contact-form-container').forEach((el) => {
+            el.classList.add('reveal-3d-right');
+        });
+
+        // Grid/card groups alternate left/right rotation per item so the
+        // whole row tumbles into place with some visual rhythm, staggered
+        // slightly so cards don't all land in the same instant.
+        const alternatingGridSelectors = [
+            '.about-info-card',
+            '.service-card',
+            '.skill-item',
+            '.contact-detail-card',
+        ];
+
+        alternatingGridSelectors.forEach((selector) => {
+            document.querySelectorAll(selector).forEach((el, i) => {
+                el.classList.add(i % 2 === 0 ? 'reveal-3d-left' : 'reveal-3d-right');
+                el.style.transitionDelay = `${(i % 4) * 0.1}s`;
+            });
+        });
+
+        // Featured projects: first card swings in from the left, second from
+        // the right, like two open panels.
+        document.querySelectorAll('.project-card').forEach((el, i) => {
+            el.classList.add(i % 2 === 0 ? 'reveal-3d-left' : 'reveal-3d-right');
+        });
+
+        // Fires the 3D "fly-in" exactly once, the first time each element
+        // crosses into the viewport, then stops watching it.
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('in-view');
+                    revealObserver.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.15,
+            rootMargin: '0px 0px -80px 0px'
+        });
+
+        document.querySelectorAll('.reveal-3d, .reveal-3d-left, .reveal-3d-right').forEach((el) => {
+            revealObserver.observe(el);
+        });
+
+        /* ==========================================================================
+           CONTINUOUS 3D HERO TILT, LINKED DIRECTLY TO SCROLL POSITION
+           ========================================================================== */
+        const heroVisual = document.querySelector('.hero-visual');
+        const heroSection = document.getElementById('home');
+        let tiltTicking = false;
+
+        function updateHeroTilt() {
+            if (heroVisual && heroSection) {
+                const heroHeight = heroSection.offsetHeight || 1;
+                const progress = Math.min(Math.max(window.scrollY / heroHeight, 0), 1);
+
+                const rotateY = progress * 35;       // turns the card away in 3D space
+                const rotateX = progress * -12;       // tips it back slightly
+                const translateZ = progress * -180;   // pushes it back into the screen
+                const opacity = 1 - progress * 0.9;
+
+                heroVisual.style.transform =
+                    `perspective(1400px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(${translateZ}px)`;
+                heroVisual.style.opacity = opacity;
+            }
+            tiltTicking = false;
+        }
+
+        window.addEventListener('scroll', () => {
+            if (!tiltTicking) {
+                requestAnimationFrame(updateHeroTilt);
+                tiltTicking = true;
+            }
+        });
+
+        updateHeroTilt();
+    }
 });
