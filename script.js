@@ -395,3 +395,93 @@ document.addEventListener('DOMContentLoaded', () => {
         updateHeroTilt();
     }
 });
+
+    /* ==========================================================================
+       THREE.JS 3D PARTICLE SCATTER/REJOIN ANIMATION
+       Creates a particle sphere that scatters and rejoins based on scroll.
+       ========================================================================== */
+    const container = document.getElementById('three-js-container');
+    if (container && typeof THREE !== 'undefined') {
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        container.appendChild(renderer.domElement);
+
+        // Particle System Settings
+        const particleCount = 2000;
+        const particles = new THREE.BufferGeometry();
+        const initialPositions = new Float32Array(particleCount * 3);
+        const currentPositions = new Float32Array(particleCount * 3);
+        const randomDirections = new Float32Array(particleCount * 3);
+
+        const radius = 15;
+        for (let i = 0; i < particleCount; i++) {
+            // Initial Sphere Distribution
+            const phi = Math.acos(-1 + (2 * i) / particleCount);
+            const theta = Math.sqrt(particleCount * Math.PI) * phi;
+
+            const x = radius * Math.cos(theta) * Math.sin(phi);
+            const y = radius * Math.sin(theta) * Math.sin(phi);
+            const z = radius * Math.cos(phi);
+
+            initialPositions[i * 3] = x;
+            initialPositions[i * 3 + 1] = y;
+            initialPositions[i * 3 + 2] = z;
+
+            // Random scatter directions
+            randomDirections[i * 3] = (Math.random() - 0.5) * 50;
+            randomDirections[i * 3 + 1] = (Math.random() - 0.5) * 50;
+            randomDirections[i * 3 + 2] = (Math.random() - 0.5) * 50;
+        }
+
+        particles.setAttribute('position', new THREE.BufferAttribute(currentPositions, 3));
+        
+        const material = new THREE.PointsMaterial({
+            color: 0x8b5cf6,
+            size: 0.15,
+            transparent: true,
+            opacity: 0.8,
+            blending: THREE.AdditiveBlending
+        });
+
+        const particleSystem = new THREE.Points(particles, material);
+        scene.add(particleSystem);
+
+        camera.position.z = 40;
+
+        // Animation Loop
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            const scrollHeight = (document.documentElement.scrollHeight || document.body.scrollHeight) - document.documentElement.clientHeight;
+            const scrollPercent = (document.documentElement.scrollTop || document.body.scrollTop) / (scrollHeight || 1);
+            
+            // Scatter effect: use a sine wave to make it scatter and rejoin periodically or just follow scroll
+            // Let's make it scatter most at the middle of the page and rejoin at top/bottom
+            const scatterFactor = Math.sin(scrollPercent * Math.PI) * 2; 
+
+            const positions = particles.attributes.position.array;
+            for (let i = 0; i < particleCount; i++) {
+                positions[i * 3] = initialPositions[i * 3] + randomDirections[i * 3] * scatterFactor;
+                positions[i * 3 + 1] = initialPositions[i * 3 + 1] + randomDirections[i * 3 + 1] * scatterFactor;
+                positions[i * 3 + 2] = initialPositions[i * 3 + 2] + randomDirections[i * 3 + 2] * scatterFactor;
+            }
+            particles.attributes.position.needsUpdate = true;
+
+            particleSystem.rotation.y += 0.002;
+            particleSystem.rotation.x += 0.001;
+            
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
+    }

@@ -1280,51 +1280,7 @@ body.light-theme .footer {
 }
 
 
-/* ==========================================================================
-   MARQUEE TICKER SYSTEM
-   ========================================================================== */
-.ticker-wrapper {
-    overflow: hidden;
-    white-space: nowrap;
-    background: var(--bg-secondary);
-    border-top: 1px solid var(--border-glass);
-    border-bottom: 1px solid var(--border-glass);
-    padding: 1.8rem 0;
-    display: flex;
-    position: relative;
-    z-index: 10;
-}
 
-.ticker-content {
-    display: inline-flex;
-    align-items: center;
-    gap: 3rem;
-    animation: marquee 25s linear infinite;
-    padding-left: 3rem;
-}
-
-.ticker-content span {
-    font-family: var(--font-heading);
-    font-size: 2rem;
-    font-weight: 900;
-    letter-spacing: 2px;
-    color: var(--text-primary);
-    text-transform: uppercase;
-}
-
-.ticker-dot {
-    color: var(--accent-purple);
-    font-size: 1.8rem;
-}
-
-@keyframes marquee {
-    0% {
-        transform: translate3d(0, 0, 0);
-    }
-    100% {
-        transform: translate3d(-100%, 0, 0);
-    }
-}
 
 /* ==========================================================================
    STARTUP SECTION (VIBEFORGE STUDIOS)
@@ -1615,15 +1571,15 @@ body.light-theme .pillar-item {
 }
 
 .reveal-3d {
-    transform: perspective(1400px) rotateX(24deg) translateY(70px) translateZ(-140px);
+    transform: perspective(1400px) rotateX(45deg) translateY(100px) translateZ(-200px);
 }
 
 .reveal-3d-left {
-    transform: perspective(1400px) rotateY(-32deg) translateX(-80px) translateZ(-120px);
+    transform: perspective(1400px) rotateY(-45deg) translateX(-150px) translateZ(-200px);
 }
 
 .reveal-3d-right {
-    transform: perspective(1400px) rotateY(32deg) translateX(80px) translateZ(-120px);
+    transform: perspective(1400px) rotateY(45deg) translateX(150px) translateZ(-200px);
 }
 
 .reveal-3d.in-view,
@@ -1655,4 +1611,18 @@ body.light-theme .pillar-item {
         transform: none !important;
         opacity: 1 !important;
     }
+}
+
+/* ==========================================================================
+   THREE.JS CONTAINER STYLES
+   ========================================================================== */
+#three-js-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.6;
 }
