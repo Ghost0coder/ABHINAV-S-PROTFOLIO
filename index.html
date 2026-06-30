@@ -33,6 +33,31 @@
     
     <!-- 3D Background Scene -->
     <div id="three-js-container"></div>
+    
+    <!-- Interactive Vibe Terminal -->
+    <div class="terminal-trigger" id="terminal-trigger" title="Open Vibe Terminal">
+        <i class="fa-solid fa-terminal"></i>
+    </div>
+    
+    <div class="vibe-terminal" id="vibe-terminal">
+        <div class="terminal-header">
+            <div class="terminal-dots">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+            </div>
+            <div class="terminal-title">vibeTerminal v1.0</div>
+            <button class="terminal-close" id="terminal-close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="terminal-body" id="terminal-body">
+            <div class="terminal-line">Welcome to <span class="text-gradient">Abhinav's</span> Vibe Terminal.</div>
+            <div class="terminal-line">Type <span class="highlight">'help'</span> to see available commands.</div>
+        </div>
+        <div class="terminal-input-line">
+            <span class="prompt">vibeCoder@portfolio:~$</span>
+            <input type="text" id="terminal-input" autofocus spellcheck="false">
+        </div>
+    </div>
 
     <!-- Header Navigation -->
     <header class="header sticky" id="header">

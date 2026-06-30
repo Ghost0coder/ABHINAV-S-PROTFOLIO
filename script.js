@@ -452,6 +452,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         camera.position.z = 40;
 
+        // Mouse Interaction
+        let mouseX = 0, mouseY = 0;
+        document.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX - window.innerWidth / 2) / 100;
+            mouseY = (e.clientY - window.innerHeight / 2) / 100;
+        });
+
         // Animation Loop
         function animate() {
             requestAnimationFrame(animate);
@@ -459,8 +466,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const scrollHeight = (document.documentElement.scrollHeight || document.body.scrollHeight) - document.documentElement.clientHeight;
             const scrollPercent = (document.documentElement.scrollTop || document.body.scrollTop) / (scrollHeight || 1);
             
-            // Scatter effect: use a sine wave to make it scatter and rejoin periodically or just follow scroll
-            // Let's make it scatter most at the middle of the page and rejoin at top/bottom
             const scatterFactor = Math.sin(scrollPercent * Math.PI) * 2; 
 
             const positions = particles.attributes.position.array;
@@ -471,8 +476,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             particles.attributes.position.needsUpdate = true;
 
-            particleSystem.rotation.y += 0.002;
-            particleSystem.rotation.x += 0.001;
+            // Follow mouse subtly
+            particleSystem.rotation.y += (mouseX - particleSystem.rotation.y) * 0.05;
+            particleSystem.rotation.x += (-mouseY - particleSystem.rotation.x) * 0.05;
             
             renderer.render(scene, camera);
         }
@@ -484,4 +490,185 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         animate();
+    }
+
+    /* ==========================================================================
+       VIBE TERMINAL INTERACTIVE LOGIC
+       Handles commands for vibes, games, and secrets.
+       ========================================================================== */
+    const terminalTrigger = document.getElementById('terminal-trigger');
+    const terminalClose = document.getElementById('terminal-close');
+    const terminal = document.getElementById('vibe-terminal');
+    const terminalInput = document.getElementById('terminal-input');
+    const terminalBody = document.getElementById('terminal-body');
+
+    if (terminalTrigger && terminal) {
+        terminalTrigger.addEventListener('click', () => {
+            terminal.classList.toggle('active');
+            if (terminal.classList.contains('active')) {
+                terminalInput.focus();
+            }
+        });
+
+        terminalClose.addEventListener('click', () => {
+            terminal.classList.remove('active');
+        });
+
+        terminalInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const command = terminalInput.value.trim().toLowerCase();
+                handleCommand(command);
+                terminalInput.value = '';
+            }
+        });
+    }
+
+    function addLine(text, type = '') {
+        const line = document.createElement('div');
+        line.className = 'terminal-line ' + type;
+        line.innerHTML = text;
+        terminalBody.appendChild(line);
+        terminalBody.scrollTop = terminalBody.scrollHeight;
+    }
+
+    function handleCommand(cmd) {
+        addLine(`<span class="prompt">vibeCoder@portfolio:~$</span> ${cmd}`);
+
+        if (cmd === 'help') {
+            addLine('Available commands:');
+            addLine('- <span class="highlight">vibe [theme]</span>: neon, sunset, matrix, original');
+            addLine('- <span class="highlight">snake</span>: Play classic Snake game');
+            addLine('- <span class="highlight">matrix</span>: Toggle Matrix Rain effect');
+            addLine('- <span class="highlight">about</span>: Learn about vibeCoder');
+            addLine('- <span class="highlight">clear</span>: Clear terminal');
+            addLine('- <span class="highlight">exit</span>: Close terminal');
+        } else if (cmd.startsWith('vibe ')) {
+            const theme = cmd.split(' ')[1];
+            const themes = ['neon', 'sunset', 'matrix', 'original'];
+            if (themes.includes(theme)) {
+                document.body.className = document.body.className.replace(/vibe-\w+/g, '');
+                if (theme !== 'original') document.body.classList.add('vibe-' + theme);
+                addLine(`Vibe changed to <span class="highlight">${theme}</span>!`);
+            } else {
+                addLine(`Try: neon, sunset, matrix, original.`);
+            }
+        } else if (cmd === 'snake') {
+            startSnakeGame();
+        } else if (cmd === 'matrix') {
+            toggleMatrixRain();
+        } else if (cmd === 'about') {
+            addLine('Abhinav.b (vibeCoder) is a self-taught developer from Carmel Polytechnic College.');
+            addLine('He specializes in 3D web experiences and clean UI.');
+        } else if (cmd === 'clear') {
+            terminalBody.innerHTML = '';
+        } else if (cmd === 'exit') {
+            terminal.classList.remove('active');
+        } else if (cmd === '') {
+            // Do nothing
+        } else {
+            addLine(`Command not found: ${cmd}. Type <span class="highlight">help</span> for assistance.`);
+        }
+    }
+
+    // --- Snake Game Logic ---
+    function startSnakeGame() {
+        addLine('Starting Snake... Use <span class="highlight">W, A, S, D</span> to move.');
+        const canvas = document.createElement('canvas');
+        canvas.width = 280;
+        canvas.height = 150;
+        canvas.style.border = '1px solid #333';
+        canvas.style.marginTop = '10px';
+        canvas.style.display = 'block';
+        terminalBody.appendChild(canvas);
+        const ctx = canvas.getContext('2d');
+        
+        let snake = [{x: 10, y: 10}];
+        let food = {x: 15, y: 10};
+        let dx = 1, dy = 0;
+        let score = 0;
+
+        const gameInterval = setInterval(() => {
+            const head = {x: snake[0].x + dx, y: snake[0].y + dy};
+            
+            // Wall Collision
+            if (head.x < 0 || head.x >= 28 || head.y < 0 || head.y >= 15 || snake.some(s => s.x === head.x && s.y === head.y)) {
+                clearInterval(gameInterval);
+                window.removeEventListener('keydown', handleKey);
+                addLine(`GAME OVER! Score: ${score}`);
+                return;
+            }
+
+            snake.unshift(head);
+            if (head.x === food.x && head.y === food.y) {
+                score += 10;
+                food = {x: Math.floor(Math.random() * 28), y: Math.floor(Math.random() * 15)};
+            } else {
+                snake.pop();
+            }
+
+            // Draw
+            ctx.fillStyle = '#0a0a0f';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#8b5cf6';
+            snake.forEach(s => ctx.fillRect(s.x * 10, s.y * 10, 9, 9));
+            ctx.fillStyle = '#00f0ff';
+            ctx.fillRect(food.x * 10, food.y * 10, 9, 9);
+        }, 150);
+
+        const handleKey = (e) => {
+            const key = e.key.toLowerCase();
+            if (key === 'w' && dy === 0) { dx = 0; dy = -1; }
+            if (key === 's' && dy === 0) { dx = 0; dy = 1; }
+            if (key === 'a' && dx === 0) { dx = -1; dy = 0; }
+            if (key === 'd' && dx === 0) { dx = 1; dy = 0; }
+            
+            // Prevent scrolling with keys while in terminal
+            if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) {
+                e.preventDefault();
+            }
+        };
+        window.addEventListener('keydown', handleKey);
+    }
+
+    // --- Matrix Rain Logic ---
+    function toggleMatrixRain() {
+        let canvas = document.getElementById('matrix-canvas');
+        if (canvas) {
+            canvas.remove();
+            addLine('Matrix Rain: <span class="highlight">OFF</span>');
+            return;
+        }
+
+        addLine('Matrix Rain: <span class="highlight">ON</span>');
+        canvas = document.createElement('canvas');
+        canvas.id = 'matrix-canvas';
+        canvas.style.position = 'fixed';
+        canvas.style.top = '0';
+        canvas.style.left = '0';
+        canvas.style.zIndex = '-2';
+        canvas.style.opacity = '0.3';
+        document.body.appendChild(canvas);
+
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*';
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+
+        function draw() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#0F0';
+            ctx.font = fontSize + 'px arial';
+            for (let i = 0; i < drops.length; i++) {
+                const text = letters[Math.floor(Math.random() * letters.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            }
+        }
+        window.matrixInterval = setInterval(draw, 33);
     }
